@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Chat</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #messages {
+      margin: 20px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    h1.typing-indicator {
+      color: black;
+      font-size: 2.5em;
+      margin: 10px 0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Real-Time Chat</h1>
+
+  
+  <div id="messages"></div>
+  
+  
+  <h1 id="typing" class="typing-indicator"></h1>
+
+  
+  <label for="ch">Message:</label>
+  <input id="ch" type="text">
+  <button id="sendBtn">Send</button>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const socket = io.connect();  
+    const username = prompt("Type your name");
+
+    const typingIndicator = document.getElementById("typing");  
+    const messagesContainer = document.getElementById("messages");
+    const inputField = document.getElementById("ch");
+    const sendButton = document.getElementById("sendBtn");
+
+   
+    console.log(typingIndicator);
+
+    
+    socket.on("typing", function(username) {
+      typingIndicator.textContent = `${username} is typing...`;
+
+      setTimeout(() => {
+        typingIndicator.textContent = ""; 
+      }, 2000);
+    });
+
+   
+    socket.on("msg", function(data) {
+      const messageElement = document.createElement("p");
+      messageElement.textContent = data;
+      messagesContainer.appendChild(messageElement);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    
+    function handleTyping() {
+      socket.emit("typing", username);  
+    }
+
+    
+    function send() {
+      const message = inputField.value;
+      socket.emit("msg", `${username}: ${message}`);
+      inputField.value = '';  
+    }
+
+    
+    inputField.addEventListener("input", handleTyping);  
+    sendButton.addEventListener("click", send);  
+  });
+</script>
+</body>
+</html>
